@@ -19,4 +19,3 @@ The script will retrieve the enrollment time and wait for it to start before try
 ## Acknowledgments
 
 * Inspired by the code of [ChenChen](https://github.com/ChenchenYo/LoginCode)
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK0Emk5gUznskkMH5Cf7DiJOf8iVjjk3INrHMDaatEni sleising@student.ethz.ch
