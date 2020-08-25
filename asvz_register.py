@@ -17,17 +17,15 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-
-class LoginFailedException(Exception):
-    pass
-
-
-# Replace the two following inputs with your personal information
-
 def load_credentials():
-    with open("credentials.json", 'r') as fp:
-        j = json.load(fp)
-    return j['username'], j['password']
+    try:
+        with open("credentials.json", 'r') as fp:
+            j = json.load(fp)
+        return j['username'], j['password']
+    except FileNotFoundError:
+        print("put your credentials {username:your_username, password: your_password} into a file named credentials.json")
+    except json.JSONDecodeError:
+        print("your credentials.json is malformed make sure to have all keys and values doubly quoted")
 
 
 def initialize_browser(headless=True):
