@@ -46,7 +46,7 @@ def initialize_browser(headless=True):
 def login(usernameInput, passwordInput, existing_browser=None):
 
     if existing_browser is None:
-        browser = initialize_browser()
+        browser = initialize_browser(headless=True)
     else:
         browser = existing_browser
     try:
@@ -70,11 +70,11 @@ def login(usernameInput, passwordInput, existing_browser=None):
             "//button[@value=\"SwitchAai\"]")
         AAI_button.click()
 
-        session_memory = browser.find_element_by_xpath(
+        session_memory = wait_for_xpath(
             ".//*[@id='rememberForSession']")
         session_memory.click()
 
-        Uni_list = browser.find_element_by_xpath(
+        Uni_list = wait_for_xpath(
             ".//*[@id='userIdPSelection_iddwrap']")
         Uni_list.click()
 
