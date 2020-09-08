@@ -1,21 +1,23 @@
-import json
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from seleniumwire import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
-from datetime import datetime, time, date, timedelta
-from time import sleep
 import argparse
-import tzlocal
+import json
 import logging
+from datetime import date, datetime, timedelta
 from pathlib import Path
+from time import sleep, time
+
 import requests
+import tzlocal
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from seleniumwire import webdriver
 
 logger = logging.getLogger(__name__)
+
 
 def load_credentials():
     try:
@@ -23,7 +25,8 @@ def load_credentials():
             j = json.load(fp)
         return j['username'], j['password']
     except FileNotFoundError:
-        print("put your credentials {username:your_username, password: your_password} into a file named credentials.json")
+        print(
+            "put your credentials {username:your_username, password: your_password} into a file named credentials.json")
     except json.JSONDecodeError:
         print("your credentials.json is malformed make sure to have all keys and values doubly quoted")
 
@@ -47,8 +50,9 @@ def login(usernameInput, passwordInput, existing_browser=None):
     else:
         browser = existing_browser
     try:
-
+        start_time = time()
         browser.implicitly_wait(30)
+
         def wait_for_xpath(xpath, timeout=30):
             return WebDriverWait(browser, timeout).until(
                 EC.presence_of_element_located((By.XPATH, xpath)))
@@ -88,7 +92,7 @@ def login(usernameInput, passwordInput, existing_browser=None):
         password.send_keys(Keys.RETURN)
 
         # wait for lesson page to be up again
-        WebDriverWait(browser, 15).until(
+        WebDriverWait(browser, 60).until(
             EC.presence_of_element_located((By.XPATH, ".//*[text()='ASVZ-Sponsoren']")))
 
         for i in range(15):
@@ -96,6 +100,9 @@ def login(usernameInput, passwordInput, existing_browser=None):
                 break
             else:
                 sleep(1)
+
+        time_measured = time()-start_time
+        logger.info(f"login took {time_measured}s")
 
     finally:
         if existing_browser is None:
