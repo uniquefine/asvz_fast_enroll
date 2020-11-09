@@ -97,7 +97,6 @@ def login(usernameInput, passwordInput, existing_browser=None):
         old_submit_button = browser.find_element_by_xpath(
             ".//*[@type='submit']")
 
-        import pdb; pdb.set_trace()
         password.send_keys(Keys.RETURN)
 
         # Wait for new page to be loaded
