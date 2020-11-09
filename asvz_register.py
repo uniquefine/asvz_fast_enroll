@@ -1,10 +1,14 @@
 import json
+
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.support.expected_conditions import staleness_of
 from seleniumwire import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from datetime import datetime, time, date, timedelta
@@ -17,13 +21,15 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+
 def load_credentials():
     try:
         with open("credentials.json", 'r') as fp:
             j = json.load(fp)
         return j['username'], j['password']
     except FileNotFoundError:
-        print("put your credentials {username:your_username, password: your_password} into a file named credentials.json")
+        print(
+            "put your credentials {username:your_username, password: your_password} into a file named credentials.json")
     except json.JSONDecodeError:
         print("your credentials.json is malformed make sure to have all keys and values doubly quoted")
 
@@ -49,6 +55,7 @@ def login(usernameInput, passwordInput, existing_browser=None):
     try:
 
         browser.implicitly_wait(30)
+
         def wait_for_xpath(xpath, timeout=30):
             return WebDriverWait(browser, timeout).until(
                 EC.presence_of_element_located((By.XPATH, xpath)))
@@ -85,17 +92,33 @@ def login(usernameInput, passwordInput, existing_browser=None):
 
         password = browser.find_element_by_id('password')
         password.send_keys(passwordInput)
+
+        # keep a reference to the login page submit button
+        old_submit_button = browser.find_element_by_xpath(
+            ".//*[@type='submit']")
+
+        import pdb; pdb.set_trace()
         password.send_keys(Keys.RETURN)
 
-        # wait for lesson page to be up again
+        # Wait for new page to be loaded
         WebDriverWait(browser, 15).until(
-            EC.presence_of_element_located((By.XPATH, ".//*[text()='ASVZ-Sponsoren']")))
+            staleness_of(old_submit_button)
+        )
 
         for i in range(15):
             if 'Authorization' in browser.requests[-1].headers:
+                # logged in
                 break
             else:
-                sleep(1)
+                # if we need to accept information sent to asvz
+                try:
+                    browser.implicitly_wait(1)
+                    wait_for_xpath(".//*[@value='Accept']", timeout=1)
+                    accept_button = browser.find_element_by_xpath(
+                        ".//*[@value='Accept']")
+                    accept_button.click()
+                except TimeoutException as e:
+                    pass
 
     finally:
         if existing_browser is None:
